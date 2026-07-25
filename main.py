@@ -16,7 +16,7 @@ app.add_middleware(
 
 session = None
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 def home():
     return {"status": "ok", "message": "Background Removal API is Live!"}
 
