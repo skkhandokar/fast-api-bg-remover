@@ -18,28 +18,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# লাইটওয়েট 'u2netp' মডেল সেশন
-session = new_session("u2netp")
+# সেশন শুরুতে None থাকবে (Lazy Loading)
+session = None
+
+def get_session():
+    global session
+    if session is None:
+        # রিকুয়েস্ট আসলে প্রথমবার মডেল লোড হবে
+        session = new_session("u2netp")
+    return session
 
 @app.get("/")
 def home():
-    return {"message": "Background Removal API is Running!"}
+    return {"status": "ok", "message": "Background Removal API is Live!"}
 
 @app.post("/api/remove-bg/")
 async def remove_background(image: UploadFile = File(...)):
     contents = await image.read()
     input_image = Image.open(io.BytesIO(contents))
     
-    # ব্যাকগ্রাউন্ড রিমুভ করা
-    output_image = remove(input_image, session=session)
+    # প্রথমবার কল হলে মডেল লোড হবে
+    current_session = get_session()
+    output_image = remove(input_image, session=current_session)
     
     img_byte_arr = io.BytesIO()
     output_image.save(img_byte_arr, format='PNG')
     
     return Response(content=img_byte_arr.getvalue(), media_type="image/png")
 
-# এই অংশটি সার্ভিসটিকে ডায়নামিক পোর্টে রান করবে
 if __name__ == "__main__":
-    # Render-এর দেওয়া PORT ধরবে, না পেলে ১০০০০ পোর্টে চলবে
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run(app, host="0.0.0.0", port=port)
