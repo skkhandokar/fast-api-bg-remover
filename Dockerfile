@@ -2,7 +2,7 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# AI ও সি-লাইব্রেরির জন্য প্রয়োজনীয় ডিপেন্ডেন্সি ইন্সটল
+# প্রয়োজনীয় সি-লাইব্রেরি
 RUN apt-get update && apt-get install -y \
     libgl1 \
     libglib2.0-0 \
@@ -13,7 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Render-এর দেওয়া $PORT ব্যবহার করার জন্য sh -c ব্যবহার করা হয়েছে (ডিফল্ট পোর্ট ১০০০০)
-ENV PORT=10000
+# Render-এর জন্য ১০০০০ পোর্ট এক্সপোজ ও সেট করা
+EXPOSE 10000
 
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port $PORT --workers 1"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "10000", "--workers", "1"]
